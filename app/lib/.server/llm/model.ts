@@ -26,8 +26,12 @@ export function getAnthropicModel(apiKey: OptionalApiKey, model: string) {
 }
 export function getOpenAILikeModel(baseURL: string, apiKey: OptionalApiKey, model: string) {
   const openai = createOpenAI({
-    baseURL,
+    baseURL: `${baseURL}/openai`,
     apiKey,
+    headers: {
+      flowTenant: 'abi',
+      flowAgent: 'flow-bolt',
+    },
   });
 
   return openai(model);

@@ -32,6 +32,7 @@ function parseCookies(cookieHeader: string) {
 }
 
 async function enhancerAction({ context, request }: ActionFunctionArgs) {
+  console.log("vai começar request with args: " + request);
   const { message, model, provider } = await request.json<{
     message: string;
     model: string;

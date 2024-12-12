@@ -35,6 +35,11 @@ export function usePromptEnhancer() {
 
     const response = await fetch('/api/enhancer', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        flowTenant: 'abi',
+        flowAgent: 'flow-bolt',
+      },
       body: JSON.stringify(requestBody),
     });
 

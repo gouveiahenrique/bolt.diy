@@ -30,6 +30,7 @@ function parseCookies(cookieHeader: string) {
 }
 
 async function chatAction({ context, request }: ActionFunctionArgs) {
+  request.headers.set('flowAgent', 'bolt');
   const { messages } = await request.json<{
     messages: Messages;
     model: string;

@@ -8,7 +8,7 @@ export const WORK_DIR = `/home/${WORK_DIR_NAME}`;
 export const MODIFICATIONS_TAG_NAME = 'bolt_file_modifications';
 export const MODEL_REGEX = /^\[Model: (.*?)\]\n\n/;
 export const PROVIDER_REGEX = /\[Provider: (.*?)\]\n\n/;
-export const DEFAULT_MODEL = 'claude-3-5-sonnet-latest';
+export const DEFAULT_MODEL = 'gpt-4o-mini';
 export const PROMPT_COOKIE_KEY = 'cachedPrompt';
 
 const logger = createScopedLogger('Constants');
@@ -51,7 +51,10 @@ const PROVIDER_LIST: ProviderInfo[] = [
   },
   {
     name: 'OpenAILike',
-    staticModels: [],
+    staticModels: [
+      { name: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'OpenAILike', maxTokenAllowed: 8000 },
+      { name: 'gpt-4o', label: 'GPT-4', provider: 'OpenAILike', maxTokenAllowed: 8000 },
+    ],
     getDynamicModels: getOpenAILikeModels,
   },
   {
@@ -408,22 +411,33 @@ async function getOpenAILikeModels(
 
     let apiKey = '';
 
-    if (apiKeys && apiKeys.OpenAILike) {
-      apiKey = apiKeys.OpenAILike;
-    }
+    apiKey = apiKeys?.OpenAILike ?? '';
 
     const response = await fetch(`${baseUrl}/models`, {
       headers: {
         Authorization: `Bearer ${apiKey}`,
+        flowTenant: 'abi',
+        flowAgent: 'flow-bolt',
       },
     });
-    const res = (await response.json()) as any;
 
-    return res.data.map((model: any) => ({
-      name: model.id,
-      label: model.id,
-      provider: 'OpenAILike',
+    let data: { name: string; directory: string; provider: string }[];
+
+    try {
+      data = await response.json();
+    } catch (e) {
+      console.error('Error parsing JSON response:', e);
+      return [];
+    }
+
+    const models = data.map((model: any) => ({
+      name: model.name,
+      label: model.directory,
+      provider: model.provider,
+      maxTokenAllowed: 4096,
     }));
+
+    return models;
   } catch (e) {
     console.error('Error getting OpenAILike models:', e);
     return [];
